@@ -1,4 +1,4 @@
-name: Windows RDP via ngrok (trial)
+name: Windows RDP via ngrok
 
 on:
   workflow_dispatch:
@@ -13,14 +13,17 @@ jobs:
     steps:
       - name: Download ngrok
         run: |
-          Invoke-WebRequest -Uri "https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip" -OutFile "ngrok.zip"
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/danielgindi/Ngrok-Windows/main/ngrok-stable-windows-amd64.zip" -OutFile "ngrok.zip"
           Expand-Archive ngrok.zip -DestinationPath .
+
       - name: Auth ngrok
         run: .\ngrok\ngrok.exe authtoken $env:NGROK_AUTHTOKEN
+
       - name: Enable RDP and firewall
         run: |
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+
       - name: Start ngrok TCP 3389
         run: |
           Start-Process -FilePath ".\ngrok\ngrok.exe" -ArgumentList "tcp 3389" -NoNewWindow
@@ -32,6 +35,7 @@ jobs:
           } else {
             Write-Output "Ngrok API not ready; check ngrok process log in actions output."
           }
+
       - name: Keep job alive
         run: |
           Write-Output "Keeping job alive. Cancel workflow to stop."
